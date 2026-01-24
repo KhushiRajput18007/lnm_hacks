@@ -1,8 +1,7 @@
 "use client";
 
 import React from 'react';
-import { User, ArrowLeft, Wallet, History, Settings, TrendingUp, TrendingDown } from 'lucide-react';
-import Link from 'next/link';
+import { User, Wallet, History, Settings, TrendingUp, TrendingDown, ExternalLink } from 'lucide-react';
 import { useAccount, useBalance, useDisconnect } from 'wagmi';
 import { ConnectButton } from '@/components/ConnectButton';
 import { SettingsModal } from '@/components/SettingsModal';
@@ -13,7 +12,6 @@ export default function ProfilePage() {
     const { disconnect } = useDisconnect();
     const [isSettingsOpen, setIsSettingsOpen] = React.useState(false);
 
-    // Mock History
     const history = [
         { id: 1, action: 'Bet on Option A', amount: '0.05 ETH', result: 'Pending', time: '10 mins ago' },
         { id: 2, action: 'Bet on Option B', amount: '0.1 ETH', result: 'Won (+0.18 ETH)', time: '2 hours ago', status: 'win' },
@@ -22,119 +20,130 @@ export default function ProfilePage() {
 
     if (!isConnected) {
         return (
-            <div className="max-w-md mx-auto min-h-screen flex flex-col items-center justify-center p-6 text-center">
-                <div className="w-20 h-20 bg-white/5 rounded-3xl flex items-center justify-center mb-6 border border-white/5 shadow-2xl backdrop-blur-md">
-                    <User size={32} className="text-gray-400" />
+            <div className="max-w-4xl mx-auto min-h-[70vh] flex flex-col items-center justify-center p-6 text-center">
+                <div className="w-24 h-24 glass rounded-3xl flex items-center justify-center mb-8 relative group">
+                    <div className="absolute inset-0 bg-primary/20 blur-2xl rounded-full opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                    <User size={40} className="text-muted group-hover:text-primary transition-colors relative z-10" />
                 </div>
-                <h1 className="text-3xl font-bold mb-2">My Profile</h1>
-                <p className="text-gray-400 mb-8 max-w-xs leading-relaxed">Connect your wallet to track your bets, view your history, and manage your earnings.</p>
-                <div className="scale-110">
-                    <ConnectButton />
-                </div>
-                <Link href="/" className="mt-12 text-sm text-indigo-400 hover:text-indigo-300 transition-colors flex items-center gap-2 font-medium">
-                    <ArrowLeft size={14} /> Back to Markets
-                </Link>
+                <h1 className="text-4xl font-black text-white tracking-tighter mb-4">YOUR PROFILE</h1>
+                <p className="text-muted mb-10 max-w-xs leading-relaxed font-medium">Connect your wallet to track your predictions and earnings.</p>
+                <ConnectButton />
             </div>
         )
     }
 
     return (
-        <div className="max-w-xl mx-auto min-h-screen pb-20 relative px-4 pt-8">
-            {/* Nav Header */}
-            <div className="flex items-center justify-between mb-10">
-                <div className="flex items-center gap-4">
-                    <Link href="/">
-                        <button className="bg-white/5 p-3 rounded-full border border-white/10 hover:bg-white/10 hover:border-white/20 transition-all group">
-                            <ArrowLeft size={20} className="text-gray-400 group-hover:text-white" />
-                        </button>
-                    </Link>
-                    <h1 className="text-2xl font-bold flex items-center gap-2">
-                        Profile
+        <div className="max-w-4xl mx-auto min-h-screen pb-20 relative px-4 pt-10">
+            <div className="flex items-center justify-between mb-12">
+                <div>
+                    <h1 className="text-4xl md:text-5xl font-black text-white tracking-tighter mb-2">
+                        DASHBOARD
                     </h1>
+                    <p className="text-muted font-medium uppercase text-[10px] tracking-[0.2em]">Manage your attention assets</p>
                 </div>
                 <button
                     onClick={() => setIsSettingsOpen(true)}
-                    className="p-3 text-gray-400 hover:text-white transition-all bg-white/5 hover:bg-white/10 rounded-full border border-white/10 hover:border-white/20"
+                    className="p-4 glass rounded-2xl text-muted hover:text-white transition-all group"
                 >
-                    <Settings size={20} />
+                    <Settings size={24} className="group-hover:rotate-90 transition-transform duration-500" />
                 </button>
             </div>
 
-            {/* Profile Card */}
-            <div className="bg-[#151519]/80 backdrop-blur-md border border-white/5 shadow-xl transition-all duration-300 hover:border-white/10 hover:bg-[#1A1A1F]/90 hover:shadow-2xl hover:shadow-indigo-500/10 hover:-translate-y-1 rounded-[2rem] p-8 mb-8 relative group overflow-hidden">
-                <div className="absolute top-0 right-0 p-8 opacity-20 group-hover:opacity-30 transition-opacity">
-                    <div className="w-32 h-32 bg-indigo-500 rounded-full blur-[60px]"></div>
-                </div>
-
+            <div className="glass rounded-4xl p-8 mb-12 relative overflow-hidden group">
+                <div className="absolute top-0 right-0 w-full h-1 bg-gradient-to-r from-primary via-secondary to-accent opacity-50"></div>
+                <div className="absolute -top-24 -right-24 w-64 h-64 bg-primary/10 blur-[80px] rounded-full"></div>
+                
                 <div className="relative z-10">
-                    <div className="flex items-center gap-5 mb-8">
-                        <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-500 p-[2px] shadow-lg shadow-indigo-500/20">
-                            <div className="w-full h-full bg-[#151519] rounded-2xl flex items-center justify-center">
-                                <span className="text-2xl">😎</span>
+                    <div className="flex flex-col md:flex-row md:items-center gap-6 mb-10">
+                        <div className="w-20 h-20 rounded-3xl glass p-1">
+                            <div className="w-full h-full bg-gradient-to-br from-primary/20 to-secondary/20 rounded-[1.25rem] flex items-center justify-center text-3xl">
+                                👨‍🚀
                             </div>
                         </div>
                         <div>
-                            <div className="text-xs text-indigo-300 font-bold uppercase tracking-wider mb-1">Connected As</div>
-                            <div className="font-mono font-bold text-lg text-white truncate w-48 bg-white/5 px-3 py-1 rounded-lg border border-white/5">
-                                {address}
+                            <div className="text-[10px] font-bold text-primary uppercase tracking-[0.2em] mb-2">Wallet Address</div>
+                            <div className="flex items-center gap-3">
+                                <div className="font-mono font-black text-xl text-white truncate max-w-[200px] md:max-w-md">
+                                    {address}
+                                </div>
+                                <ExternalLink size={16} className="text-muted hover:text-white cursor-pointer transition-colors" />
                             </div>
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-4">
-                        <div className="bg-black/30 rounded-2xl p-4 border border-white/5 hover:border-indigo-500/30 transition-colors">
-                            <div className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-2 flex items-center gap-1.5">
-                                <Wallet size={12} className="text-indigo-400" /> Balance
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                        <div className="glass bg-white/[0.02] rounded-3xl p-6 border border-white/5 hover:border-primary/30 transition-all">
+                            <div className="text-[10px] text-muted font-bold uppercase tracking-widest mb-3 flex items-center gap-2">
+                                <Wallet size={14} className="text-primary" /> Net Worth
                             </div>
-                            <div className="text-2xl font-black text-white">{balance?.formatted.slice(0, 6)} <span className="text-sm font-medium text-gray-500">{balance?.symbol}</span></div>
+                            <div className="text-2xl font-black text-white">{balance?.formatted.slice(0, 6)} <span className="text-sm font-bold text-muted">{balance?.symbol}</span></div>
                         </div>
-                        <div className="bg-black/30 rounded-2xl p-4 border border-white/5 hover:border-purple-500/30 transition-colors">
-                            <div className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-2 flex items-center gap-1.5">
-                                <History size={12} className="text-purple-400" /> Total Bets
+                        <div className="glass bg-white/[0.02] rounded-3xl p-6 border border-white/5 hover:border-secondary/30 transition-all">
+                            <div className="text-[10px] text-muted font-bold uppercase tracking-widest mb-3 flex items-center gap-2">
+                                <History size={14} className="text-secondary" /> Active Bets
                             </div>
-                            <div className="text-2xl font-black text-white">12</div>
+                            <div className="text-2xl font-black text-white">4</div>
+                        </div>
+                        <div className="glass bg-white/[0.02] rounded-3xl p-6 border border-white/5 hover:border-green-500/30 transition-all">
+                            <div className="text-[10px] text-muted font-bold uppercase tracking-widest mb-3 flex items-center gap-2">
+                                <TrendingUp size={14} className="text-green-500" /> PnL 24h
+                            </div>
+                            <div className="text-2xl font-black text-green-500">+0.42 <span className="text-sm font-bold opacity-50">ETH</span></div>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <h2 className="text-sm font-bold text-gray-400 uppercase tracking-widest mb-6 px-2 flex items-center gap-2">
-                <History size={14} /> Recent Activity
+            <h2 className="text-[10px] font-bold text-muted uppercase tracking-[0.2em] mb-6 px-2 flex items-center gap-2">
+                <History size={14} className="text-primary" /> Recent Predictions
             </h2>
 
             <div className="space-y-4">
                 {history.map((item) => (
-                    <div key={item.id} className="bg-[#151519]/80 backdrop-blur-md border border-white/5 shadow-xl transition-all duration-300 hover:border-white/10 hover:bg-[#1A1A1F]/90 hover:shadow-2xl hover:shadow-indigo-500/10 hover:-translate-y-1 rounded-2xl p-5 hover:bg-white/10 cursor-default">
-                        <div className="flex justify-between items-start mb-3">
-                            <div>
-                                <span className={`text-sm font-bold block mb-1 ${item.action.includes('Option A') ? 'text-indigo-300' : 'text-purple-300'
-                                    }`}>{item.action}</span>
-                                <span className="text-[10px] text-gray-500 font-mono bg-white/5 px-2 py-0.5 rounded-full">{item.time}</span>
+                    <div key={item.id} className="glass glass-hover rounded-3xl p-6 group">
+                        <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4">
+                            <div className="flex items-center gap-4">
+                                <div className={`w-12 h-12 rounded-2xl flex items-center justify-center border
+                                    ${item.status === 'win' ? 'bg-green-500/10 border-green-500/20 text-green-500' :
+                                      item.status === 'loss' ? 'bg-red-500/10 border-red-500/20 text-red-500' :
+                                      'bg-primary/10 border-primary/20 text-primary'}
+                                `}>
+                                    {item.status === 'win' ? <TrendingUp size={20} /> : 
+                                     item.status === 'loss' ? <TrendingDown size={20} /> : 
+                                     <History size={20} />}
+                                </div>
+                                <div>
+                                    <div className="text-sm font-black text-white group-hover:text-primary transition-colors">{item.action}</div>
+                                    <div className="text-[10px] text-muted font-bold uppercase tracking-widest mt-1">{item.time}</div>
+                                </div>
                             </div>
-                            <span className={`text-[10px] font-bold px-2.5 py-1 rounded-lg border ${item.status === 'win' ? 'bg-green-500/10 text-green-400 border-green-500/20' :
-                                item.status === 'loss' ? 'bg-red-500/10 text-red-400 border-red-500/20' :
-                                    'bg-yellow-500/10 text-yellow-400 border-yellow-500/20'
-                                }`}>
-                                {item.result}
-                            </span>
-                        </div>
-                        <div className="flex justify-between items-center pt-3 border-t border-white/5">
-                            <div className="flex items-center gap-2">
-                                {item.status === 'win' ? <TrendingUp size={14} className="text-green-500" /> : <TrendingDown size={14} className="text-red-500" />}
-                                <span className="text-xs font-medium text-gray-300">Wager</span>
+                            <div className="flex items-center justify-between sm:justify-end gap-8">
+                                <div className="text-right">
+                                    <div className="text-[10px] font-bold text-muted uppercase tracking-widest mb-1">Wager</div>
+                                    <div className="text-sm font-black text-white">{item.amount}</div>
+                                </div>
+                                <div className="text-right min-w-[100px]">
+                                    <div className="text-[10px] font-bold text-muted uppercase tracking-widest mb-1">Result</div>
+                                    <div className={`text-sm font-black ${
+                                        item.status === 'win' ? 'text-green-500' :
+                                        item.status === 'loss' ? 'text-red-500' :
+                                        'text-primary'
+                                    }`}>
+                                        {item.result}
+                                    </div>
+                                </div>
                             </div>
-                            <span className="font-mono text-sm font-bold text-white">{item.amount}</span>
                         </div>
                     </div>
                 ))}
             </div>
 
-            <div className="mt-12">
+            <div className="mt-12 flex justify-center">
                 <button
                     onClick={() => disconnect()}
-                    className="w-full py-4 rounded-2xl border border-red-500/20 text-red-400 hover:bg-red-500/10 hover:border-red-500/30 transition-all font-bold text-sm tracking-wide"
+                    className="px-8 py-4 rounded-2xl bg-white/[0.03] border border-red-500/20 text-red-500 hover:bg-red-500/10 hover:border-red-500/50 transition-all font-black text-[10px] uppercase tracking-[0.2em]"
                 >
-                    Disconnect Wallet
+                    Log Out of Terminal
                 </button>
             </div>
 

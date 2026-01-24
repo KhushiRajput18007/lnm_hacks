@@ -1,10 +1,20 @@
 import { MiniAppNotificationDetails } from "@farcaster/miniapp-sdk";
 import { Redis } from "@upstash/redis";
 
-const redis = new Redis({
-  url: process.env.UPSTASH_REDIS_REST_URL,
-  token: process.env.UPSTASH_REDIS_REST_TOKEN,
-});
+const redisUrl = process.env.UPSTASH_REDIS_REST_URL;
+const redisToken = process.env.UPSTASH_REDIS_REST_TOKEN;
+
+let redis: Redis | null = null;
+const memoryStore = new Map<string, any>();
+
+if (redisUrl && redisToken) {
+  redis = new Redis({
+    url: redisUrl,
+    token: redisToken,
+  });
+} else {
+  console.warn("Redis credentials not found, using in-memory store.");
+}
 
 function getUserNotificationDetailsKey(fid: number): string {
   return `${fid}`;
@@ -13,20 +23,31 @@ function getUserNotificationDetailsKey(fid: number): string {
 export async function getUserNotificationDetails(
   fid: number
 ): Promise<MiniAppNotificationDetails | null> {
-  return await redis.get<MiniAppNotificationDetails>(
-    getUserNotificationDetailsKey(fid)
-  );
+  if (redis) {
+    return await redis.get<MiniAppNotificationDetails>(
+      getUserNotificationDetailsKey(fid)
+    );
+  }
+  return memoryStore.get(getUserNotificationDetailsKey(fid)) || null;
 }
 
 export async function setUserNotificationDetails(
   fid: number,
   notificationDetails: MiniAppNotificationDetails
 ): Promise<void> {
-  await redis.set(getUserNotificationDetailsKey(fid), notificationDetails);
+  if (redis) {
+    await redis.set(getUserNotificationDetailsKey(fid), notificationDetails);
+    return;
+  }
+  memoryStore.set(getUserNotificationDetailsKey(fid), notificationDetails);
 }
 
 export async function deleteUserNotificationDetails(
   fid: number
 ): Promise<void> {
-  await redis.del(getUserNotificationDetailsKey(fid));
+  if (redis) {
+    await redis.del(getUserNotificationDetailsKey(fid));
+    return;
+  }
+  memoryStore.delete(getUserNotificationDetailsKey(fid));
 }

@@ -11,6 +11,10 @@ export const metadata: Metadata = {
   description: 'Bet on the which internet content will go viral.',
 }
 
+import { Header } from '@/components/Header'
+import { Footer } from '@/components/Footer'
+import { BottomNav } from '@/components/BottomNav'
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -20,7 +24,14 @@ export default function RootLayout({
     <html lang="en">
       <body className={`${inter.className} min-h-screen bg-black text-white selection:bg-primary/20`}>
         <Providers>
-          {children}
+          <div className="flex flex-col min-h-screen">
+            <Header />
+            <main className="flex-1">
+              {children}
+            </main>
+            <Footer />
+            <BottomNav />
+          </div>
         </Providers>
       </body>
     </html>

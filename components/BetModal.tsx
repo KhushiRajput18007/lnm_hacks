@@ -2,7 +2,9 @@
 
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Wallet } from 'lucide-react';
+import { X, Wallet, CheckCircle2, TrendingUp } from 'lucide-react';
+import { ShareCard } from './ShareCard';
+import confetti from 'canvas-confetti';
 
 interface BetModalProps {
     isOpen: boolean;
@@ -11,12 +13,6 @@ interface BetModalProps {
     side: 'A' | 'B';
     onConfirm: (amount: string) => void;
 }
-
-
-import { ShareCard } from './ShareCard';
-import confetti from 'canvas-confetti';
-
-// ... (props interface)
 
 export const BetModal: React.FC<BetModalProps> = ({ isOpen, onClose, marketId, side, onConfirm }) => {
     const [amount, setAmount] = useState('0.01');
@@ -28,115 +24,122 @@ export const BetModal: React.FC<BetModalProps> = ({ isOpen, onClose, marketId, s
         onConfirm(amount);
         setStatus('SUCCESS');
         confetti({
-            particleCount: 100,
-            spread: 70,
+            particleCount: 150,
+            spread: 80,
             origin: { y: 0.6 },
-            colors: ['#00FF94', '#3b82f6', '#ffffff']
+            colors: ['#6366f1', '#a855f7', '#ec4899']
         });
     };
 
     if (status === 'SUCCESS') {
         return (
-            <AnimatePresence>
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
-                    <motion.div
-                        initial={{ scale: 0.9, opacity: 0 }}
-                        animate={{ scale: 1, opacity: 1 }}
-                        className="bg-surface w-full max-w-sm rounded-3xl p-6 border border-gray-800 text-center relative overflow-hidden"
+            <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/90 backdrop-blur-md p-4">
+                <motion.div
+                    initial={{ scale: 0.9, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    className="glass w-full max-w-sm rounded-5xl p-8 text-center relative overflow-hidden"
+                >
+                    <div className="w-20 h-20 bg-primary/20 rounded-full flex items-center justify-center mx-auto mb-6 shadow-2xl shadow-primary/20">
+                        <CheckCircle2 size={40} className="text-primary" />
+                    </div>
+                    <h2 className="text-3xl font-black text-white mb-2 tracking-tighter">
+                        BET PLACED!
+                    </h2>
+                    <p className="text-muted text-sm mb-8">
+                        Your prediction is now live on the blockchain.
+                    </p>
+
+                    <ShareCard
+                        amount={amount}
+                        side={side}
+                        marketQuestion="Prediction live!" 
+                    />
+
+                    <button
+                        onClick={() => { setStatus('IDLE'); onClose(); }}
+                        className="w-full mt-6 py-4 rounded-2xl font-bold text-muted hover:text-white hover:bg-white/[0.03] transition-all border border-transparent hover:border-white/5"
                     >
-                        <h2 className="text-2xl font-black text-white mb-2">
-                            BET PLACED! 🎉
-                        </h2>
-                        <p className="text-gray-400 text-sm mb-6">
-                            Good luck! Here is your receipt.
-                        </p>
-
-                        <ShareCard
-                            amount={amount}
-                            side={side}
-                            marketQuestion="Which will get more likes?" // Todo: pass actual question
-                        />
-
-                        <button
-                            onClick={() => { setStatus('IDLE'); onClose(); }}
-                            className="w-full mt-4 py-3 rounded-xl font-bold text-gray-500 hover:text-white hover:bg-white/5 transition-colors"
-                        >
-                            Close
-                        </button>
-                    </motion.div>
-                </div>
-            </AnimatePresence>
+                        Close Window
+                    </button>
+                </motion.div>
+            </div>
         )
     }
 
     return (
-        <AnimatePresence>
-            <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/80 backdrop-blur-sm">
-                <motion.div
-                    initial={{ y: "100%" }}
-                    animate={{ y: 0 }}
-                    exit={{ y: "100%" }}
-                    className="bg-surface w-full max-w-md rounded-t-3xl sm:rounded-2xl p-6 border-t sm:border border-gray-800"
-                >
-                    <div className="flex justify-between items-center mb-6">
-                        <h2 className="text-xl font-bold text-white">
-                            Bet on <span className={side === 'A' ? 'text-primary' : 'text-secondary'}>Option {side}</span>
+        <div className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center bg-black/90 backdrop-blur-md p-4">
+            <motion.div
+                initial={{ y: "100%", opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                exit={{ y: "100%", opacity: 0 }}
+                className="glass w-full max-w-md rounded-t-[3rem] sm:rounded-[3rem] p-8 relative"
+            >
+                <div className="flex justify-between items-center mb-8">
+                    <div>
+                        <h2 className="text-2xl font-black text-white tracking-tighter">
+                            PLACE YOUR <span className={side === 'A' ? 'text-primary' : 'text-secondary'}>BET</span>
                         </h2>
-                        <button onClick={onClose} className="p-2 rounded-full hover:bg-white/10">
-                            <X size={20} />
-                        </button>
+                        <p className="text-[10px] font-bold text-muted uppercase tracking-[0.2em] mt-1">Market ID: #{marketId}</p>
                     </div>
-
-                    <div className="mb-8">
-                        <label className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3 block">Enter Amount</label>
-                        <div className="relative mb-4">
-                            <input
-                                type="number"
-                                value={amount}
-                                onChange={(e) => setAmount(e.target.value)}
-                                className="w-full bg-black/40 border-2 border-transparent focus:border-accent rounded-2xl p-6 text-4xl font-black text-white text-center outline-none transition-colors"
-                                placeholder="0.00"
-                            />
-                            <span className="absolute right-6 top-1/2 -translate-y-1/2 text-sm font-bold text-gray-500">ETH</span>
-                        </div>
-
-                        <div className="grid grid-cols-4 gap-2">
-                            {[1, 5, 10].map((val) => (
-                                <button
-                                    key={val}
-                                    onClick={() => setAmount(val.toString())}
-                                    className="bg-gray-800/50 hover:bg-white/10 text-white font-medium py-2 rounded-xl text-sm transition-colors border border-transparent hover:border-gray-600"
-                                >
-                                    {val}
-                                </button>
-                            ))}
-                            <button
-                                onClick={() => setAmount('1.54')} // Mock Max
-                                className="bg-gray-800/50 hover:bg-accent/20 text-accent font-medium py-2 rounded-xl text-sm transition-colors border border-transparent hover:border-accent/50"
-                            >
-                                MAX
-                            </button>
-                        </div>
-                        <div className="text-center mt-3 text-xs text-gray-500">
-                            Available: <span className="text-white font-mono">1.54 ETH</span>
-                        </div>
-                    </div>
-
-                    <button
-                        onClick={handleConfirm}
-                        className={`w-full py-4 rounded-xl font-bold text-lg mb-4 transition-all active:scale-95 flex justify-center items-center gap-2
-              ${side === 'A' ? 'bg-primary hover:bg-blue-600' : 'bg-secondary hover:bg-red-600'}
-            `}
-                    >
-                        <Wallet size={20} />
-                        Confirm Bet
+                    <button onClick={onClose} className="p-3 rounded-2xl hover:bg-white/[0.05] transition-colors text-muted hover:text-white">
+                        <X size={24} />
                     </button>
+                </div>
 
-                    <p className="text-center text-xs text-gray-500">
-                        Funds will be locked in the smart contract until resolution.
-                    </p>
-                </motion.div>
-            </div>
-        </AnimatePresence>
+                <div className="mb-8">
+                    <div className="flex justify-between items-end mb-4 px-1">
+                        <label className="text-[10px] font-bold text-muted uppercase tracking-widest">Wager Amount</label>
+                        <div className="flex items-center gap-1.5 text-[10px] font-bold text-primary">
+                            <TrendingUp size={12} /> Potential: {(parseFloat(amount || '0') * 1.8).toFixed(4)} ETH
+                        </div>
+                    </div>
+                    
+                    <div className="relative mb-6">
+                        <input
+                            type="number"
+                            value={amount}
+                            onChange={(e) => setAmount(e.target.value)}
+                            className="w-full bg-white/[0.03] border border-white/10 focus:border-primary/50 rounded-[2rem] p-8 text-5xl font-black text-white text-center outline-none transition-all shadow-inner"
+                            placeholder="0.00"
+                        />
+                        <div className="absolute right-8 top-1/2 -translate-y-1/2 text-sm font-bold text-muted">ETH</div>
+                    </div>
+
+                    <div className="grid grid-cols-4 gap-3">
+                        {['0.01', '0.05', '0.1', '0.5'].map((val) => (
+                            <button
+                                key={val}
+                                onClick={() => setAmount(val)}
+                                className="bg-white/[0.03] hover:bg-white/[0.08] text-white font-bold py-3 rounded-2xl text-xs transition-all border border-white/5 hover:border-white/10"
+                            >
+                                {val}
+                            </button>
+                        ))}
+                    </div>
+                    <div className="flex justify-between items-center mt-6 px-2">
+                        <span className="text-[10px] font-bold text-muted uppercase tracking-widest">Available Balance</span>
+                        <span className="text-[10px] font-mono font-bold text-white">1.5420 ETH</span>
+                    </div>
+                </div>
+
+                <button
+                    onClick={handleConfirm}
+                    className={`group relative overflow-hidden w-full py-5 rounded-[2rem] font-black text-lg mb-6 transition-all active:scale-[0.98] flex justify-center items-center gap-3 shadow-2xl
+                        ${side === 'A' 
+                            ? 'bg-primary text-white shadow-primary/20' 
+                            : 'bg-secondary text-white shadow-secondary/20'}
+                    `}
+                >
+                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:animate-[shimmer_1.5s_infinite]"></div>
+                    <Wallet size={20} />
+                    Confirm Prediction
+                </button>
+
+                <p className="text-center text-[10px] font-bold text-muted leading-relaxed uppercase tracking-widest opacity-50">
+                    Your funds will be locked in the <br /> 
+                    smart contract until resolution
+                </p>
+            </motion.div>
+        </div>
     );
 };

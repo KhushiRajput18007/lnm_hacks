@@ -249,7 +249,7 @@ const STATIC_MARKETS: Market[] = [
             type: "tweet",
             author: "Taylor Swift",
             handle: "@taylorswift13",
-            avatar: "https://pbs.twimg.com/profile_images/1580951113575641089/Vf3l8a6i_400x400.jpg",
+            avatar: "https://abs.twimg.com/sticky/default_profile_images/default_profile_400x400.png",
             content: "I have never been happier. The Eras Tour is my life. 💖",
             currentStats: 2500000,
             predictedStats: 2500000,

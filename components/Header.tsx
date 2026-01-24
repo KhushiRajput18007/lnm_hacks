@@ -1,42 +1,60 @@
 "use client";
 
-import { useAccount, useConnect, useDisconnect } from 'wagmi';
-import { Wallet, LogOut } from 'lucide-react';
-import { theme } from '@/styles/theme';
+import { Sparkles, Trophy, User } from 'lucide-react';
+import Link from 'next/link';
+import { ConnectButton } from './ConnectButton';
+import { usePathname } from 'next/navigation';
 
 export function Header() {
-    const { address, isConnected } = useAccount();
-    const { disconnect } = useDisconnect();
-    // Using standard wagmi connect - usually handled by miniapp wrapper but here's a fallback UI
+    const pathname = usePathname();
 
-    const shortAddress = address ? `${address.slice(0, 4)}...${address.slice(-4)}` : '';
+    const navItems = [
+        { name: 'Markets', href: '/', icon: Sparkles },
+        { name: 'Leaderboard', href: '/leaderboard', icon: Trophy },
+        { name: 'Profile', href: '/profile', icon: User },
+    ];
 
     return (
-        <header className={`sticky top-0 z-40 w-full backdrop-blur-md bg-black/50 border-b border-zinc-800`}>
-            <div className={`${theme.spacing.container} flex items-center justify-between h-14 px-4`}>
-                <div className="flex items-center gap-2">
-                    <div className="w-6 h-6 rounded-full bg-gradient-to-tr from-purple-500 to-pink-500 flex items-center justify-center text-[10px] font-bold">
-                        AR
-                    </div>
-                    <span className="font-bold text-white text-sm">Attention Roulette</span>
+        <header className="sticky top-0 z-50 w-full glass border-b border-white/5">
+            <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
+                <div className="flex items-center gap-8">
+                    <Link href="/" className="flex items-center gap-3 group">
+                        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center shadow-lg shadow-primary/20 group-hover:scale-105 transition-transform">
+                            <Sparkles size={20} className="text-white" />
+                        </div>
+                        <div className="hidden sm:block">
+                            <h1 className="font-bold text-xl tracking-tight leading-none text-white">
+                                Attention<span className="text-primary">Roulette</span>
+                            </h1>
+                            <p className="text-[10px] text-muted font-medium tracking-wide uppercase mt-1">
+                                Market of Attention
+                            </p>
+                        </div>
+                    </Link>
+
+                    <nav className="hidden md:flex items-center gap-1 p-1 bg-white/[0.03] rounded-full border border-white/5 backdrop-blur-md">
+                        {navItems.map((item) => {
+                            const isActive = pathname === item.href;
+                            return (
+                                <Link
+                                    key={item.name}
+                                    href={item.href}
+                                    className={`px-5 py-2 rounded-full font-medium text-sm transition-all flex items-center gap-2 ${
+                                        isActive
+                                            ? 'bg-white/10 text-white shadow-inner shadow-white/5'
+                                            : 'text-muted hover:text-white hover:bg-white/5'
+                                    }`}
+                                >
+                                    <item.icon size={16} className={isActive ? 'text-primary' : ''} />
+                                    {item.name}
+                                </Link>
+                            );
+                        })}
+                    </nav>
                 </div>
 
-                <div className="flex items-center gap-2">
-                    {isConnected ? (
-                        <button
-                            onClick={() => disconnect()}
-                            className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-zinc-800 text-xs font-medium text-zinc-300 hover:bg-zinc-700 transition"
-                        >
-                            <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-                            {shortAddress}
-                            <LogOut size={12} className="ml-1 opacity-50" />
-                        </button>
-                    ) : (
-                        <div className="text-xs text-zinc-500">
-                            <span className="hidden sm:inline">Connect Wallet</span>
-                            <Wallet className="inline sm:hidden" size={16} />
-                        </div>
-                    )}
+                <div className="flex items-center gap-4">
+                    <ConnectButton />
                 </div>
             </div>
         </header>

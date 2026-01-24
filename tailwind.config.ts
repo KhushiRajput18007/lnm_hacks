@@ -9,11 +9,12 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        background: "#0B0F14", // Dark navy/black
-        surface: "#151A21", // Slightly lighter for cards
-        primary: "#3b82f6", // Electric Blue
-        secondary: "#ef4444", // Red
-        accent: "#00FF94", // Neon Green
+        background: "rgb(var(--background) / <alpha-value>)",
+        surface: "rgb(var(--surface) / <alpha-value>)",
+        primary: "rgb(var(--primary) / <alpha-value>)",
+        secondary: "rgb(var(--secondary) / <alpha-value>)",
+        accent: "rgb(var(--accent) / <alpha-value>)",
+        // win/loss can stay or be updated if needed, leaving for now as they aren't in globals
         win: "#00FF94",
         loss: "#FF2E2E",
       },

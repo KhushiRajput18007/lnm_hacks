@@ -54,11 +54,28 @@ export default function Home() {
     setIsModalOpen(false);
   };
 
+  const [selectedFilter, setSelectedFilter] = useState<'volume' | 'ending' | 'newest'>('volume');
+
+  // Filter/Sort Logic
+  const getSortedMarkets = () => {
+    let sorted = [...markets];
+    if (selectedFilter === 'volume') {
+      sorted.sort((a, b) => (b.totalPoolA + b.totalPoolB) - (a.totalPoolA + a.totalPoolB));
+    } else if (selectedFilter === 'ending') {
+      sorted.sort((a, b) => a.expiresAt - b.expiresAt);
+    } else if (selectedFilter === 'newest') {
+      sorted.sort((a, b) => b.id - a.id);
+    }
+    return sorted;
+  };
+
+  const sortedMarkets = getSortedMarkets();
+
   return (
     <main className="min-h-screen bg-background pb-24 relative selection:bg-primary/30">
 
       {/* Desktop Header */}
-      <header className="sticky top-0 z-40 bg-background/80 backdrop-blur-md border-b border-gray-800">
+      <header className="sticky top-0 z-40 bg-[#0D0D0F]/70 backdrop-blur-xl border-b border-white/5">
         <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center shadow-lg shadow-primary/20">
@@ -71,14 +88,14 @@ export default function Home() {
           </div>
 
           {/* Desktop Nav - Hidden on Mobile */}
-          <nav className="hidden md:flex items-center gap-8 bg-surface/50 rounded-full px-6 py-2 border border-white/5">
-            <Link href="/" className="text-white font-medium text-sm hover:text-primary transition-colors flex items-center gap-2">
-              <Sparkles size={16} /> Markets
+          <nav className="hidden md:flex items-center gap-1 p-1 bg-white/5 rounded-full border border-white/5 backdrop-blur-md">
+            <Link href="/" className="px-5 py-2 rounded-full text-white bg-white/10 font-medium text-sm transition-all flex items-center gap-2 shadow-inner">
+              <Sparkles size={16} className="text-indigo-400" /> Markets
             </Link>
-            <Link href="/leaderboard" className="text-gray-400 font-medium text-sm hover:text-white transition-colors flex items-center gap-2">
+            <Link href="/leaderboard" className="px-5 py-2 rounded-full text-gray-400 hover:text-white hover:bg-white/5 font-medium text-sm transition-all flex items-center gap-2">
               <Trophy size={16} /> Leaderboard
             </Link>
-            <Link href="/profile" className="text-gray-400 font-medium text-sm hover:text-white transition-colors flex items-center gap-2">
+            <Link href="/profile" className="px-5 py-2 rounded-full text-gray-400 hover:text-white hover:bg-white/5 font-medium text-sm transition-all flex items-center gap-2">
               <User size={16} /> Profile
             </Link>
           </nav>
@@ -90,16 +107,33 @@ export default function Home() {
       <div className="max-w-7xl mx-auto px-4 pt-6 md:pt-10 flex gap-8">
 
         {/* Sidebar Filters (Desktop) */}
-        <aside className="hidden lg:block w-64 shrink-0 sticky top-24 h-fit">
-          <div className="bg-surface rounded-3xl p-6 border border-gray-800">
-            <h3 className="text-gray-400 text-xs font-bold uppercase tracking-wider mb-4 flex items-center gap-2">
-              <Filter size={14} /> Filters
+        <aside className="hidden lg:block w-72 shrink-0 sticky top-28 h-fit">
+          <div className="bg-[#151519]/80 backdrop-blur-md border border-white/5 shadow-xl transition-all duration-300 hover:border-white/10 hover:bg-[#1A1A1F]/90 hover:shadow-2xl hover:shadow-indigo-500/10 hover:-translate-y-1 rounded-3xl p-6">
+            <h3 className="text-gray-500 text-xs font-bold uppercase tracking-widest mb-6 flex items-center gap-2">
+              <Filter size={14} /> Filter Markets
             </h3>
             <div className="space-y-2">
-              <button className="w-full text-left px-4 py-2 rounded-xl bg-white/5 text-white font-medium border border-white/10">High Volume 🔥</button>
-              <button className="w-full text-left px-4 py-2 rounded-xl hover:bg-white/5 text-gray-400 hover:text-white transition-colors">Ending Soon ⏳</button>
-              <button className="w-full text-left px-4 py-2 rounded-xl hover:bg-white/5 text-gray-400 hover:text-white transition-colors">Newest 🆕</button>
-              <button className="w-full text-left px-4 py-2 rounded-xl hover:bg-white/5 text-gray-400 hover:text-white transition-colors">My Bets 💼</button>
+              <button
+                onClick={() => setSelectedFilter('volume')}
+                className={`w-full text-left px-4 py-3 rounded-xl font-medium border transition-all duration-200 flex items-center justify-between group ${selectedFilter === 'volume' ? 'bg-indigo-500/10 text-indigo-300 border-indigo-500/20 shadow-lg shadow-indigo-500/10' : 'hover:bg-white/5 text-gray-400 border-transparent hover:text-white'}`}
+              >
+                <span>High Volume</span>
+                <span className="text-lg grayscale group-hover:grayscale-0 transition-all">🔥</span>
+              </button>
+              <button
+                onClick={() => setSelectedFilter('ending')}
+                className={`w-full text-left px-4 py-3 rounded-xl font-medium border transition-all duration-200 flex items-center justify-between group ${selectedFilter === 'ending' ? 'bg-indigo-500/10 text-indigo-300 border-indigo-500/20 shadow-lg shadow-indigo-500/10' : 'hover:bg-white/5 text-gray-400 border-transparent hover:text-white'}`}
+              >
+                <span>Ending Soon</span>
+                <span className="text-lg grayscale group-hover:grayscale-0 transition-all">⏳</span>
+              </button>
+              <button
+                onClick={() => setSelectedFilter('newest')}
+                className={`w-full text-left px-4 py-3 rounded-xl font-medium border transition-all duration-200 flex items-center justify-between group ${selectedFilter === 'newest' ? 'bg-indigo-500/10 text-indigo-300 border-indigo-500/20 shadow-lg shadow-indigo-500/10' : 'hover:bg-white/5 text-gray-400 border-transparent hover:text-white'}`}
+              >
+                <span>Newest</span>
+                <span className="text-lg grayscale group-hover:grayscale-0 transition-all">🆕</span>
+              </button>
             </div>
           </div>
         </aside>
@@ -107,19 +141,35 @@ export default function Home() {
         {/* Main Content */}
         <div className="flex-1 w-full max-w-4xl mx-auto">
           {/* Mobile Hero (Hidden on large screens maybe?) */}
-          <div className="relative mb-8 p-8 rounded-3xl bg-gradient-to-r from-purple-900/40 to-blue-900/40 border border-white/10 overflow-hidden group hover:border-primary/30 transition-all">
-            <div className="relative z-10 max-w-lg">
-              <div className="inline-block px-3 py-1 rounded-full bg-accent/10 border border-accent/20 text-accent text-xs font-bold mb-3">
-                LIVE MARKETS
+          {/* Premium Hero Section */}
+          <div className="relative mb-10 p-10 rounded-[2.5rem] overflow-hidden group">
+            <div className="absolute inset-0 bg-gradient-to-br from-[#1A1A24] to-[#0D0D0F] border border-white/5 rounded-[2.5rem] z-0"></div>
+            <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-indigo-600/20 blur-[120px] rounded-full translate-x-1/3 -translate-y-1/2 z-0 opacity-60"></div>
+            <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-purple-600/10 blur-[100px] rounded-full -translate-x-1/3 translate-y-1/3 z-0"></div>
+
+            <div className="relative z-10">
+              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-300 text-[10px] font-bold tracking-widest uppercase mb-6 backdrop-blur-md">
+                <span className="w-2 h-2 rounded-full bg-indigo-500 animate-pulse"></span>
+                Live Markets
               </div>
-              <h2 className="text-3xl md:text-5xl font-black italic text-white mb-2 leading-tight">
-                PREDICT THE <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-accent">VIRAL.</span>
+              <h2 className="text-4xl md:text-6xl font-black italic text-white mb-4 leading-[0.9] tracking-tighter mix-blend-screen">
+                PREDICT THE <br />
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400">VIRAL MOMENT.</span>
               </h2>
-              <p className="text-gray-300 md:text-lg max-w-sm">
-                Bet on real-time internet culture. Which tweet bangs? Which reel flops? You decide.
+              <p className="text-gray-400 md:text-lg max-w-lg leading-relaxed mb-8">
+                Bet on real-time internet culture. Which tweet bangs? Which reel flops?
+                <span className="text-white font-medium"> The market decides.</span>
               </p>
+
+              <div className="flex gap-4">
+                <button className="px-6 py-3 rounded-full bg-white text-black font-bold text-sm hover:scale-105 transition-transform shadow-[0_0_20px_rgba(255,255,255,0.3)]">
+                  Start Betting
+                </button>
+                <button className="px-6 py-3 rounded-full bg-white/5 border border-white/10 text-white font-bold text-sm hover:bg-white/10 transition-colors backdrop-blur-md">
+                  How it Works
+                </button>
+              </div>
             </div>
-            <div className="absolute top-0 right-0 w-64 h-64 bg-primary/20 blur-[80px] rounded-full translate-x-1/2 -translate-y-1/2"></div>
           </div>
 
           {/* Infinite Scroll Feed */}
@@ -141,7 +191,7 @@ export default function Home() {
             style={{ overflow: 'visible' }} // Fix scrolling issue
           >
             <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-              {markets.map((market, index) => (
+              {sortedMarkets.map((market, index) => (
                 <MarketCard
                   key={`${market.id}-${index}`}
                   market={market}

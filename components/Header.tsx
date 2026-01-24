@@ -3,6 +3,7 @@
 import { Sparkles, Trophy, User } from 'lucide-react';
 import Link from 'next/link';
 import { ConnectButton } from './ConnectButton';
+import { ChainSelector } from './ChainSelector';
 import { usePathname } from 'next/navigation';
 
 export function Header() {
@@ -39,11 +40,10 @@ export function Header() {
                                 <Link
                                     key={item.name}
                                     href={item.href}
-                                    className={`px-5 py-2 rounded-full font-medium text-sm transition-all flex items-center gap-2 ${
-                                        isActive
+                                    className={`px-5 py-2 rounded-full font-medium text-sm transition-all flex items-center gap-2 ${isActive
                                             ? 'bg-white/10 text-white shadow-inner shadow-white/5'
                                             : 'text-muted hover:text-white hover:bg-white/5'
-                                    }`}
+                                        }`}
                                 >
                                     <item.icon size={16} className={isActive ? 'text-primary' : ''} />
                                     {item.name}
@@ -53,7 +53,8 @@ export function Header() {
                     </nav>
                 </div>
 
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-3">
+                    <ChainSelector />
                     <ConnectButton />
                 </div>
             </div>

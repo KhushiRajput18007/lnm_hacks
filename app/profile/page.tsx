@@ -1,22 +1,48 @@
 "use client";
 
-import React from 'react';
-import { User, Wallet, History, Settings, TrendingUp, TrendingDown, ExternalLink } from 'lucide-react';
-import { useAccount, useBalance, useDisconnect } from 'wagmi';
+import React, { useEffect, useState } from 'react';
+import { User, Wallet, History, Settings, TrendingUp, ExternalLink } from 'lucide-react';
+import { useAccount, useDisconnect } from 'wagmi';
 import { ConnectButton } from '@/components/ConnectButton';
 import { SettingsModal } from '@/components/SettingsModal';
+import { TransactionHistory } from '@/components/TransactionHistory';
+import { useTransactionStore } from '@/lib/stores/transactionStore';
+import { fetchWalletBalance } from '@/lib/utils/balanceUtils';
+import { getNativeCurrencySymbol } from '@/lib/web3/chains';
 
 export default function ProfilePage() {
     const { address, isConnected } = useAccount();
-    const { data: balance } = useBalance({ address });
     const { disconnect } = useDisconnect();
     const [isSettingsOpen, setIsSettingsOpen] = React.useState(false);
+    const [realBalance, setRealBalance] = useState<string | null>(null);
+    const [isLoadingBalance, setIsLoadingBalance] = useState(false);
 
-    const history = [
-        { id: 1, action: 'Bet on Option A', amount: '0.05 ETH', result: 'Pending', time: '10 mins ago' },
-        { id: 2, action: 'Bet on Option B', amount: '0.1 ETH', result: 'Won (+0.18 ETH)', time: '2 hours ago', status: 'win' },
-        { id: 3, action: 'Bet on Option A', amount: '0.02 ETH', result: 'Lost', time: '1 day ago', status: 'loss' },
-    ];
+    const {
+        transactions,
+        selectedChain,
+        optimisticBalance,
+        setOptimisticBalance,
+        getActiveBetsCount,
+        getTotalBetsCount
+    } = useTransactionStore();
+
+    // Fetch wallet balance on mount and when address changes
+    useEffect(() => {
+        if (address && isConnected) {
+            setIsLoadingBalance(true);
+            fetchWalletBalance(address, selectedChain)
+                .then((balance) => {
+                    setRealBalance(balance);
+                    // Initialize optimistic balance if not set
+                    if (!optimisticBalance && balance) {
+                        setOptimisticBalance(balance);
+                    }
+                })
+                .finally(() => {
+                    setIsLoadingBalance(false);
+                });
+        }
+    }, [address, isConnected, selectedChain]);
 
     if (!isConnected) {
         return (
@@ -29,8 +55,15 @@ export default function ProfilePage() {
                 <p className="text-muted mb-10 max-w-xs leading-relaxed font-medium">Connect your wallet to track your predictions and earnings.</p>
                 <ConnectButton />
             </div>
-        )
+        );
     }
+
+    const activeBets = getActiveBetsCount();
+    const totalBets = getTotalBetsCount();
+
+    // Use optimistic balance if available, otherwise real balance
+    const displayBalance = optimisticBalance || realBalance || '—';
+    const currencySymbol = getNativeCurrencySymbol(selectedChain);
 
     return (
         <div className="max-w-4xl mx-auto min-h-screen pb-20 relative px-4 pt-10">
@@ -52,7 +85,7 @@ export default function ProfilePage() {
             <div className="glass rounded-4xl p-8 mb-12 relative overflow-hidden group">
                 <div className="absolute top-0 right-0 w-full h-1 bg-gradient-to-r from-primary via-secondary to-accent opacity-50"></div>
                 <div className="absolute -top-24 -right-24 w-64 h-64 bg-primary/10 blur-[80px] rounded-full"></div>
-                
+
                 <div className="relative z-10">
                     <div className="flex flex-col md:flex-row md:items-center gap-6 mb-10">
                         <div className="w-20 h-20 rounded-3xl glass p-1">
@@ -76,67 +109,33 @@ export default function ProfilePage() {
                             <div className="text-[10px] text-muted font-bold uppercase tracking-widest mb-3 flex items-center gap-2">
                                 <Wallet size={14} className="text-primary" /> Net Worth
                             </div>
-                            <div className="text-2xl font-black text-white">{balance?.formatted.slice(0, 6)} <span className="text-sm font-bold text-muted">{balance?.symbol}</span></div>
+                            <div className="text-2xl font-black text-white">
+                                {isLoadingBalance ? (
+                                    <span className="text-muted animate-pulse">Loading...</span>
+                                ) : (
+                                    <>
+                                        {displayBalance} <span className="text-sm font-bold text-muted">{currencySymbol}</span>
+                                    </>
+                                )}
+                            </div>
                         </div>
                         <div className="glass bg-white/[0.02] rounded-3xl p-6 border border-white/5 hover:border-secondary/30 transition-all">
                             <div className="text-[10px] text-muted font-bold uppercase tracking-widest mb-3 flex items-center gap-2">
-                                <History size={14} className="text-secondary" /> Active Bets
+                                <History size={14} className="text-secondary" /> Total Bets
                             </div>
-                            <div className="text-2xl font-black text-white">4</div>
+                            <div className="text-2xl font-black text-white">{totalBets}</div>
                         </div>
                         <div className="glass bg-white/[0.02] rounded-3xl p-6 border border-white/5 hover:border-green-500/30 transition-all">
                             <div className="text-[10px] text-muted font-bold uppercase tracking-widest mb-3 flex items-center gap-2">
-                                <TrendingUp size={14} className="text-green-500" /> PnL 24h
+                                <TrendingUp size={14} className="text-green-500" /> Active Bets
                             </div>
-                            <div className="text-2xl font-black text-green-500">+0.42 <span className="text-sm font-bold opacity-50">ETH</span></div>
+                            <div className="text-2xl font-black text-green-500">{activeBets}</div>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <h2 className="text-[10px] font-bold text-muted uppercase tracking-[0.2em] mb-6 px-2 flex items-center gap-2">
-                <History size={14} className="text-primary" /> Recent Predictions
-            </h2>
-
-            <div className="space-y-4">
-                {history.map((item) => (
-                    <div key={item.id} className="glass glass-hover rounded-3xl p-6 group">
-                        <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4">
-                            <div className="flex items-center gap-4">
-                                <div className={`w-12 h-12 rounded-2xl flex items-center justify-center border
-                                    ${item.status === 'win' ? 'bg-green-500/10 border-green-500/20 text-green-500' :
-                                      item.status === 'loss' ? 'bg-red-500/10 border-red-500/20 text-red-500' :
-                                      'bg-primary/10 border-primary/20 text-primary'}
-                                `}>
-                                    {item.status === 'win' ? <TrendingUp size={20} /> : 
-                                     item.status === 'loss' ? <TrendingDown size={20} /> : 
-                                     <History size={20} />}
-                                </div>
-                                <div>
-                                    <div className="text-sm font-black text-white group-hover:text-primary transition-colors">{item.action}</div>
-                                    <div className="text-[10px] text-muted font-bold uppercase tracking-widest mt-1">{item.time}</div>
-                                </div>
-                            </div>
-                            <div className="flex items-center justify-between sm:justify-end gap-8">
-                                <div className="text-right">
-                                    <div className="text-[10px] font-bold text-muted uppercase tracking-widest mb-1">Wager</div>
-                                    <div className="text-sm font-black text-white">{item.amount}</div>
-                                </div>
-                                <div className="text-right min-w-[100px]">
-                                    <div className="text-[10px] font-bold text-muted uppercase tracking-widest mb-1">Result</div>
-                                    <div className={`text-sm font-black ${
-                                        item.status === 'win' ? 'text-green-500' :
-                                        item.status === 'loss' ? 'text-red-500' :
-                                        'text-primary'
-                                    }`}>
-                                        {item.result}
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                ))}
-            </div>
+            <TransactionHistory />
 
             <div className="mt-12 flex justify-center">
                 <button

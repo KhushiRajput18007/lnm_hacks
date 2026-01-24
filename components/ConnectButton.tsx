@@ -1,21 +1,48 @@
 "use client";
 
-import React from 'react';
-import { useAccount, useConnect, useDisconnect, useBalance } from 'wagmi';
+import React, { useEffect } from 'react';
+import { useAccount, useConnect, useDisconnect, useBalance, useChainId } from 'wagmi';
 import { Loader2, Wallet, LogOut, ChevronDown } from 'lucide-react';
+import { getNativeCurrencySymbol, getChainName } from '@/lib/web3/chains';
+import { useNotificationStore } from '@/lib/stores/notificationStore';
 
 export const ConnectButton = () => {
     const { address, isConnected } = useAccount();
     const { connect, connectors, isPending } = useConnect();
     const { disconnect } = useDisconnect();
+    const chainId = useChainId();
     const { data: balance } = useBalance({ address });
     const [showConnectors, setShowConnectors] = React.useState(false);
+    const { addNotification } = useNotificationStore();
+    const [hasNotified, setHasNotified] = React.useState(false);
+
+    // Trigger notification on wallet connect
+    useEffect(() => {
+        if (isConnected && address && !hasNotified) {
+            const chainName = getChainName(chainId);
+            addNotification({
+                type: 'success',
+                message: `Connected to ${chainName}`,
+                duration: 4000,
+            });
+            setHasNotified(true);
+        } else if (!isConnected) {
+            setHasNotified(false);
+        }
+    }, [isConnected, address, chainId, hasNotified, addNotification]);
 
     const handleConnectTrigger = () => {
         // If there's only one connector or specifically just injected, connect directly
         const availableConnectors = connectors.filter(c => c.id !== 'injected'); // Filter out generic injected if specific ones differ
 
-        // Prioritize Farcaster if available
+        // Prioritize MetaMask if available
+        const metaMaskConnector = connectors.find(c => c.id === 'metaMask' || c.id === 'io.metamask');
+        if (metaMaskConnector) {
+            connect({ connector: metaMaskConnector });
+            return;
+        }
+
+        // Fallback to Farcaster if available
         const farcasterConnector = connectors.find(c => c.id === 'farcaster-miniapp');
         if (farcasterConnector) {
             connect({ connector: farcasterConnector });
@@ -34,12 +61,17 @@ export const ConnectButton = () => {
     };
 
     if (isConnected && address) {
+        const currentChainName = getChainName(chainId);
+        const currentCurrencySymbol = getNativeCurrencySymbol(chainId);
+
         return (
             <div className="flex items-center gap-3">
                 <div className="hidden lg:flex flex-col items-end">
-                    <span className="text-[10px] font-bold text-muted uppercase tracking-wider">Balance</span>
+                    <span className="text-[10px] font-bold text-muted uppercase tracking-wider">
+                        {currentChainName}
+                    </span>
                     <span className="text-xs font-mono text-white">
-                        {balance?.formatted.slice(0, 6)} <span className="text-primary">{balance?.symbol}</span>
+                        {balance?.formatted.slice(0, 6)} <span className="text-primary">{currentCurrencySymbol}</span>
                     </span>
                 </div>
                 <button

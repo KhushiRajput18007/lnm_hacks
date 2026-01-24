@@ -46,10 +46,17 @@ export default function Home() {
     setIsModalOpen(true);
   };
 
-  const handleConfirmBet = (amount: string) => {
+  const handleConfirmBet = async (amount: string) => {
     if (!selectedMarketId || !selectedSide) return;
-    console.log(`Betting ${amount} on Market ${selectedMarketId}, Option ${selectedSide}`);
-    setIsModalOpen(false);
+
+    try {
+      console.log(`Betting ${amount} on Market ${selectedMarketId}, Option ${selectedSide}`);
+      // The actual transaction is handled in BetModal
+      setIsModalOpen(false);
+    } catch (error) {
+      console.error('Error confirming bet:', error);
+      alert('Failed to confirm bet. Please try again.');
+    }
   };
 
   const [selectedFilter, setSelectedFilter] = useState<'volume' | 'ending' | 'newest'>('volume');
@@ -158,7 +165,7 @@ export default function Home() {
               Active Markets
             </h3>
             <div className="flex items-center gap-2 lg:hidden">
-              <select 
+              <select
                 value={selectedFilter}
                 onChange={(e) => setSelectedFilter(e.target.value as any)}
                 className="bg-white/[0.03] border border-white/10 rounded-xl px-4 py-2 text-xs font-bold text-white focus:outline-none focus:border-primary transition-all"

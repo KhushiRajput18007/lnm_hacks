@@ -19,14 +19,42 @@ const MOCK_PREDICTIONS: Prediction[] = [
         question: "Will this frame get 100 likes?",
         expiresInMinutes: 30,
         shareCaption: "This frame is going viral. Betting YES.",
+    },
+    {
+        question: "Will ETH break $3000 in the next 24 hours?",
+        expiresInMinutes: 1440,
+        shareCaption: "Bullish on ETH. Let's see if it breaks $3k!",
+    },
+    {
+        question: "Will this tweet get more engagement than the last one?",
+        expiresInMinutes: 120,
+        shareCaption: "Betting on viral content. This one's going to moon!",
     }
 ];
 
+/**
+ * Generate a prediction question
+ * Uses AI if enabled, otherwise returns mock data
+ */
 export const generatePrediction = async (): Promise<Prediction> => {
-    // Simulate AI delay
+    // Check if AI is enabled
+    const aiEnabled = process.env.NEXT_PUBLIC_ENABLE_AI === 'true';
+    const geminiApiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY;
+
+    if (aiEnabled && geminiApiKey) {
+        try {
+            // TODO: Integrate LangChain + Gemini here
+            // For now, fall back to mock data
+            console.log('AI generation not yet implemented, using mock data');
+        } catch (error) {
+            console.error('AI generation failed, falling back to mock data:', error);
+        }
+    }
+
+    // Simulate AI delay for better UX
     await new Promise((resolve) => setTimeout(resolve, 800));
 
-    // Pick random prediction (Deterministic for demo if needed, but random is funner)
+    // Pick random prediction
     const index = Math.floor(Math.random() * MOCK_PREDICTIONS.length);
     return MOCK_PREDICTIONS[index];
 };

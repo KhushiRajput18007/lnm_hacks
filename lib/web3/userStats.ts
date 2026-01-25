@@ -35,7 +35,7 @@ export async function getUserStats(
             const bet = await contract.getBet(betId);
             const market = await contract.getMarket(bet.marketId);
 
-            totalWagered += bet.amount;
+            totalWagered += BigInt(bet.amount);
 
             // Check if market is resolved
             if (market.resolved) {
@@ -47,11 +47,11 @@ export async function getUserStats(
                     // Calculate winnings if not claimed yet
                     if (!bet.claimed) {
                         const winnings = await contract.calculateWinnings(betId);
-                        netProfit += winnings - bet.amount; // Profit = winnings - original bet
+                        netProfit += BigInt(winnings) - BigInt(bet.amount); // Profit = winnings - original bet
                     }
                 } else {
                     losses++;
-                    netProfit -= bet.amount; // Lost the bet amount
+                    netProfit -= BigInt(bet.amount); // Lost the bet amount
                 }
             } else {
                 // Market not resolved yet

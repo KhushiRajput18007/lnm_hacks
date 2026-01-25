@@ -12,7 +12,7 @@ import { safeWalletCall, logError, isApplicationError } from '../utils/errorHand
  * @returns Connected address or null
  */
 export async function connectWallet(): Promise<string | null> {
-    return safeWalletCall(
+    return await safeWalletCall(
         async () => {
             if (typeof window === 'undefined') {
                 throw new Error('Window is not defined');
@@ -36,7 +36,7 @@ export async function connectWallet(): Promise<string | null> {
         },
         'connectWallet',
         { retry: true, fallback: null }
-    );
+    ) ?? null;
 }
 
 /**
@@ -44,7 +44,7 @@ export async function connectWallet(): Promise<string | null> {
  * @param chainId - Target chain ID
  */
 export async function switchNetwork(chainId: number): Promise<boolean> {
-    return safeWalletCall(
+    return await safeWalletCall(
         async () => {
             if (typeof window === 'undefined' || !window.ethereum) {
                 throw new Error('MetaMask is not available');
@@ -75,7 +75,7 @@ export async function switchNetwork(chainId: number): Promise<boolean> {
         },
         'switchNetwork',
         { retry: true, fallback: false }
-    ) || false;
+    ) ?? false;
 }
 
 /**

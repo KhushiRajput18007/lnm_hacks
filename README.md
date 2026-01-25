@@ -10,8 +10,8 @@ Bet on what captures the world's attention. Predict viral moments, tweet battles
 
 | Resource | Link |
 |----------|------|
-| **🌐 Live Demo** | [https://attention-roulette.vercel.app](https://attention-roulette.vercel.app) |
-| **📜 Smart Contract** | [`0xE5B7B04041A13B2Fe5AAf5dB1784f19EAc2878a0`](https://explorer.testnet.monad.xyz/address/0xE5B7B04041A13B2Fe5AAf5dB1784f19EAc2878a0) |
+| **🌐 Live Demo** | [https://lnm-hacks13.onrender.com/](https://lnm-hacks13.onrender.com/) |
+| **📜 Smart Contract** | [`0xE5B7B04041A13B2Fe5AAf5dB1784f19EAc2878a0`](https://testnet.monadscan.com/address/0xE5B7B04041A13B2Fe5AAf5dB1784f19EAc2878a0) |
 | **⛓️ Network** | Monad Testnet (Chain ID: 10143) |
 
 ---

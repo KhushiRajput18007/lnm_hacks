@@ -50,17 +50,20 @@ export function Header() {
             <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
                 <div className="flex items-center gap-8">
                     <Link href="/" className="flex items-center gap-3 group">
-                        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center shadow-lg shadow-primary/20 group-hover:scale-105 transition-transform">
-                            <Sparkles size={20} className="text-white" />
+                        {/* Roulette Wheel Logo */}
+                        <div className="w-9 h-9 rounded-lg bg-primary flex items-center justify-center group-hover:scale-105 transition-transform">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <circle cx="12" cy="12" r="10" stroke="white" strokeWidth="2" fill="none" />
+                                <circle cx="12" cy="12" r="3" fill="white" />
+                                <path d="M12 2V6" stroke="white" strokeWidth="2" strokeLinecap="round" />
+                                <path d="M12 18V22" stroke="white" strokeWidth="2" strokeLinecap="round" />
+                                <path d="M2 12H6" stroke="white" strokeWidth="2" strokeLinecap="round" />
+                                <path d="M18 12H22" stroke="white" strokeWidth="2" strokeLinecap="round" />
+                            </svg>
                         </div>
-                        <div className="hidden sm:block">
-                            <h1 className="font-bold text-xl tracking-tight leading-none text-white">
-                                Attention<span className="text-primary">Roulette</span>
-                            </h1>
-                            <p className="text-[10px] text-muted font-medium tracking-wide uppercase mt-1">
-                                Market of Attention
-                            </p>
-                        </div>
+                        <span className="hidden sm:block text-white font-bold text-lg tracking-tight">
+                            AttentionRoulette
+                        </span>
                     </Link>
 
                     <nav className="hidden md:flex items-center gap-1 p-1 bg-white/[0.03] rounded-full border border-white/5 backdrop-blur-md">

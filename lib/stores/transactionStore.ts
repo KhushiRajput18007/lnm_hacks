@@ -1,62 +1,110 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
-export interface Transaction {
+export interface UserBet {
+    id: string;
+    marketId: number;
+    blockchainMarketId?: number; // Actual market ID on blockchain
+    betId?: string; // Bet ID from contract for claiming
     txHash: string;
     chain: number;
     chainName: string;
     amount: string;
-    marketId: number;
     side: 'YES' | 'NO';
-    status: 'pending' | 'success' | 'failed' | 'active';
+    status: 'pending' | 'active' | 'won' | 'lost' | 'claimed';
     timestamp: number;
-    marketQuestion?: string;
+    marketQuestion: string;
+    potentialWinnings?: string;
+    socialContent?: {
+        author: string;
+        handle: string;
+        content: string;
+    };
 }
 
-interface TransactionStore {
-    transactions: Transaction[];
+export interface MarketState {
+    localMarketId: number;
+    blockchainMarketId?: number;
+    totalYesBets: number;
+    totalNoBets: number;
+    userBets: string[]; // Bet IDs
+    created: boolean;
+}
+
+interface BettingStore {
+    // User bets
+    bets: UserBet[];
+    addBet: (bet: UserBet) => void;
+    updateBetStatus: (id: string, status: UserBet['status']) => void;
+    getBetsByMarket: (marketId: number) => UserBet[];
+
+    // Market states (tracking local pool before blockchain sync)
+    marketStates: Record<number, MarketState>;
+    updateMarketState: (marketId: number, updates: Partial<MarketState>) => void;
+    getMarketState: (marketId: number) => MarketState | undefined;
+
+    // Chain selection
     selectedChain: number;
-    optimisticBalance: string | null;
-    addTransaction: (tx: Transaction) => void;
     setSelectedChain: (chainId: number) => void;
-    getTransactionsByAddress: (address: string) => Transaction[];
-    getActiveBetsCount: () => number;
-    getTotalBetsCount: () => number;
+
+    // Balance
+    optimisticBalance: string | null;
     setOptimisticBalance: (balance: string | null) => void;
     subtractFromBalance: (amount: string) => void;
+    addToBalance: (amount: string) => void;
+
+    // Stats
+    getTotalBetsCount: () => number;
+    getActiveBetsCount: () => number;
+    getWinsCount: () => number;
+    getLossesCount: () => number;
 }
 
-export const useTransactionStore = create<TransactionStore>()(
+export const useBettingStore = create<BettingStore>()(
     persist(
         (set, get) => ({
-            transactions: [],
-            selectedChain: 10143, // Default to Monad Testnet
+            bets: [],
+            marketStates: {},
+            selectedChain: 10143,
             optimisticBalance: null,
 
-            addTransaction: (tx: Transaction) => {
+            addBet: (bet: UserBet) => {
                 set((state) => ({
-                    transactions: [tx, ...state.transactions],
+                    bets: [bet, ...state.bets],
                 }));
+            },
+
+            updateBetStatus: (id: string, status: UserBet['status']) => {
+                set((state) => ({
+                    bets: state.bets.map(bet =>
+                        bet.id === id ? { ...bet, status } : bet
+                    ),
+                }));
+            },
+
+            getBetsByMarket: (marketId: number) => {
+                return get().bets.filter(bet => bet.marketId === marketId);
+            },
+
+            updateMarketState: (marketId: number, updates: Partial<MarketState>) => {
+                set((state) => ({
+                    marketStates: {
+                        ...state.marketStates,
+                        [marketId]: {
+                            ...state.marketStates[marketId],
+                            localMarketId: marketId,
+                            ...updates,
+                        },
+                    },
+                }));
+            },
+
+            getMarketState: (marketId: number) => {
+                return get().marketStates[marketId];
             },
 
             setSelectedChain: (chainId: number) => {
                 set({ selectedChain: chainId });
-            },
-
-            getTransactionsByAddress: (address: string) => {
-                // For now, return all transactions
-                // In future, filter by address
-                return get().transactions;
-            },
-
-            getActiveBetsCount: () => {
-                return get().transactions.filter(
-                    (tx) => tx.status === 'active' || tx.status === 'success'
-                ).length;
-            },
-
-            getTotalBetsCount: () => {
-                return get().transactions.length;
             },
 
             setOptimisticBalance: (balance: string | null) => {
@@ -72,9 +120,34 @@ export const useTransactionStore = create<TransactionStore>()(
                     set({ optimisticBalance: newBalance.toFixed(4) });
                 }
             },
+
+            addToBalance: (amount: string) => {
+                const current = get().optimisticBalance;
+                if (current) {
+                    const currentNum = parseFloat(current);
+                    const amountNum = parseFloat(amount);
+                    const newBalance = currentNum + amountNum;
+                    set({ optimisticBalance: newBalance.toFixed(4) });
+                }
+            },
+
+            getTotalBetsCount: () => get().bets.length,
+
+            getActiveBetsCount: () =>
+                get().bets.filter(b => b.status === 'active' || b.status === 'pending').length,
+
+            getWinsCount: () =>
+                get().bets.filter(b => b.status === 'won' || b.status === 'claimed').length,
+
+            getLossesCount: () =>
+                get().bets.filter(b => b.status === 'lost').length,
         }),
         {
-            name: 'attention-roulette-transactions',
+            name: 'attention-roulette-bets',
         }
     )
 );
+
+// Legacy export for compatibility
+export const useTransactionStore = useBettingStore;
+export type Transaction = UserBet;

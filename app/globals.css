@@ -52,3 +52,52 @@ body {
 ::-webkit-scrollbar-thumb:hover {
   background: #555;
 }
+
+/* React Tweet Dark Theme Styles */
+[data-theme="dark"] {
+  --tweet-bg-color: transparent;
+  --tweet-bg-color-hover: rgba(255, 255, 255, 0.03);
+  --tweet-border: 1px solid rgba(255, 255, 255, 0.1);
+  --tweet-font-family: inherit;
+  --tweet-font-color: #e7e9ea;
+  --tweet-font-color-secondary: #71767b;
+  --tweet-color-blue-primary: #1da1f2;
+  --tweet-color-blue-secondary: #1a91da;
+  --tweet-color-green-primary: #00ba7c;
+  --tweet-color-red-primary: #f91880;
+  --tweet-actions-icon-color: #71767b;
+  --tweet-quoted-bg-color: rgba(255, 255, 255, 0.02);
+  --tweet-skeleton-gradient: linear-gradient(270deg, rgba(255,255,255,0), rgba(255,255,255,0.05), rgba(255,255,255,0));
+}
+
+.react-tweet-theme {
+  --tweet-container-margin: 0 !important;
+  margin: 0 !important;
+}
+
+[data-theme="dark"] .react-tweet-theme article {
+  background: transparent !important;
+  border: none !important;
+}
+
+/* Compact tweet card */
+.compact-tweet .react-tweet-theme {
+  transform: scale(0.9);
+  transform-origin: top left;
+}
+
+/* Tweet container styling */
+.tweet-wrapper {
+  background: transparent;
+}
+
+.tweet-wrapper > div {
+  margin: 0 !important;
+}
+
+/* Real tweet container */
+.real-tweet-container {
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 1rem;
+  overflow: hidden;
+}

@@ -14,9 +14,7 @@ monad_testnet = "https://testnet.monad.xyz"
 [etherscan]
 monad_testnet = { key = "${ETHERSCAN_API_KEY}", url = "https://explorer.testnet.monad.xyz/api" }
 
-# Gas settings
-gas_limit = 30000000
-gas_price = 1000000000
+# Testing configuration
+[fuzz]
+runs = 256
 
-# Testing
-fuzz_runs = 256

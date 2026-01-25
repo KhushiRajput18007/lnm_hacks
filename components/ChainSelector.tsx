@@ -1,7 +1,7 @@
 "use client";
 
 import React from 'react';
-import { useTransactionStore } from '@/lib/stores/transactionStore';
+import { useBettingStore } from '@/lib/stores/transactionStore';
 import { monadTestnet, ethereum, getChainName } from '@/lib/web3/chains';
 import { useChainId, useSwitchChain } from 'wagmi';
 import { Check } from 'lucide-react';
@@ -41,7 +41,7 @@ const CHAIN_OPTIONS: ChainOption[] = [
 ];
 
 export const ChainSelector: React.FC = () => {
-    const { selectedChain, setSelectedChain } = useTransactionStore();
+    const { selectedChain, setSelectedChain } = useBettingStore();
     const currentChainId = useChainId();
     const { switchChain } = useSwitchChain();
     const [isOpen, setIsOpen] = React.useState(false);
@@ -94,8 +94,8 @@ export const ChainSelector: React.FC = () => {
                                     key={chain.id}
                                     onClick={() => handleSelectChain(chain.id)}
                                     className={`w-full text-left px-3 py-3 rounded-lg transition-all flex items-center justify-between group ${selectedChain === chain.id
-                                            ? 'bg-primary/10 text-primary'
-                                            : 'hover:bg-white/[0.05] text-white'
+                                        ? 'bg-primary/10 text-primary'
+                                        : 'hover:bg-white/[0.05] text-white'
                                         }`}
                                 >
                                     <div className="flex items-center gap-3">

@@ -1,14 +1,14 @@
 "use client";
 
 import React, { useEffect, useState } from 'react';
-import { User, Wallet, History, Settings, TrendingUp, ExternalLink } from 'lucide-react';
+import { User, Wallet, History, Settings, TrendingUp, ExternalLink, Trophy, TrendingDown } from 'lucide-react';
 import { useAccount, useDisconnect } from 'wagmi';
 import { ConnectButton } from '@/components/ConnectButton';
 import { SettingsModal } from '@/components/SettingsModal';
 import { TransactionHistory } from '@/components/TransactionHistory';
-import { useTransactionStore } from '@/lib/stores/transactionStore';
-import { fetchWalletBalance } from '@/lib/utils/balanceUtils';
+import { useBettingStore } from '@/lib/stores/transactionStore';
 import { getNativeCurrencySymbol } from '@/lib/web3/chains';
+import { ethers } from 'ethers';
 
 export default function ProfilePage() {
     const { address, isConnected } = useAccount();
@@ -18,31 +18,38 @@ export default function ProfilePage() {
     const [isLoadingBalance, setIsLoadingBalance] = useState(false);
 
     const {
-        transactions,
+        bets,
         selectedChain,
         optimisticBalance,
         setOptimisticBalance,
         getActiveBetsCount,
-        getTotalBetsCount
-    } = useTransactionStore();
+        getTotalBetsCount,
+        getWinsCount,
+        getLossesCount
+    } = useBettingStore();
 
-    // Fetch wallet balance on mount and when address changes
+    // Fetch wallet balance directly from blockchain
     useEffect(() => {
-        if (address && isConnected) {
+        if (address && isConnected && window.ethereum) {
             setIsLoadingBalance(true);
-            fetchWalletBalance(address, selectedChain)
-                .then((balance) => {
-                    setRealBalance(balance);
-                    // Initialize optimistic balance if not set
-                    if (!optimisticBalance && balance) {
-                        setOptimisticBalance(balance);
-                    }
-                })
-                .finally(() => {
+            const fetchBalance = async () => {
+                try {
+                    const provider = new ethers.BrowserProvider(window.ethereum);
+                    const balance = await provider.getBalance(address);
+                    const balanceFormatted = ethers.formatEther(balance);
+                    const balanceRounded = parseFloat(balanceFormatted).toFixed(4);
+                    setRealBalance(balanceRounded);
+                    setOptimisticBalance(balanceRounded);
+                } catch (error) {
+                    console.error('Error fetching balance:', error);
+                    setRealBalance(null);
+                } finally {
                     setIsLoadingBalance(false);
-                });
+                }
+            };
+            fetchBalance();
         }
-    }, [address, isConnected, selectedChain]);
+    }, [address, isConnected, selectedChain, setOptimisticBalance]);
 
     if (!isConnected) {
         return (
@@ -60,10 +67,17 @@ export default function ProfilePage() {
 
     const activeBets = getActiveBetsCount();
     const totalBets = getTotalBetsCount();
-
-    // Use optimistic balance if available, otherwise real balance
+    const wins = getWinsCount();
+    const losses = getLossesCount();
     const displayBalance = optimisticBalance || realBalance || '—';
     const currencySymbol = getNativeCurrencySymbol(selectedChain);
+
+    // Calculate win rate
+    const completedBets = wins + losses;
+    const winRate = completedBets > 0 ? ((wins / completedBets) * 100).toFixed(1) : '—';
+
+    // Calculate total wagered
+    const totalWagered = bets.reduce((sum, bet) => sum + parseFloat(bet.amount), 0);
 
     return (
         <div className="max-w-4xl mx-auto min-h-screen pb-20 relative px-4 pt-10">
@@ -99,51 +113,126 @@ export default function ProfilePage() {
                                 <div className="font-mono font-black text-xl text-white truncate max-w-[200px] md:max-w-md">
                                     {address}
                                 </div>
-                                <ExternalLink size={16} className="text-muted hover:text-white cursor-pointer transition-colors" />
+                                <a
+                                    href={`https://explorer.testnet.monad.xyz/address/${address}`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-muted hover:text-primary transition-colors"
+                                >
+                                    <ExternalLink size={16} />
+                                </a>
                             </div>
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                        <div className="glass bg-white/[0.02] rounded-3xl p-6 border border-white/5 hover:border-primary/30 transition-all">
-                            <div className="text-[10px] text-muted font-bold uppercase tracking-widest mb-3 flex items-center gap-2">
-                                <Wallet size={14} className="text-primary" /> Net Worth
+                    {/* Stats Grid */}
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        {/* Balance */}
+                        <div className="glass rounded-2xl p-5 relative overflow-hidden group/card">
+                            <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover/card:opacity-100 transition-opacity"></div>
+                            <div className="relative z-10">
+                                <div className="flex items-center gap-2 text-muted text-xs font-bold uppercase tracking-wider mb-2">
+                                    <Wallet size={14} />
+                                    Balance
+                                </div>
+                                <div className="text-2xl font-black text-white">
+                                    {isLoadingBalance ? (
+                                        <div className="h-8 w-24 bg-white/5 animate-pulse rounded-lg"></div>
+                                    ) : (
+                                        <>{displayBalance} <span className="text-sm text-muted">{currencySymbol}</span></>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Total Bets */}
+                        <div className="glass rounded-2xl p-5 relative overflow-hidden group/card">
+                            <div className="absolute inset-0 bg-gradient-to-br from-secondary/5 to-transparent opacity-0 group-hover/card:opacity-100 transition-opacity"></div>
+                            <div className="relative z-10">
+                                <div className="flex items-center gap-2 text-muted text-xs font-bold uppercase tracking-wider mb-2">
+                                    <History size={14} />
+                                    Total Bets
+                                </div>
+                                <div className="text-2xl font-black text-white">
+                                    {totalBets}
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Wins */}
+                        <div className="glass rounded-2xl p-5 relative overflow-hidden group/card">
+                            <div className="absolute inset-0 bg-gradient-to-br from-green-500/5 to-transparent opacity-0 group-hover/card:opacity-100 transition-opacity"></div>
+                            <div className="relative z-10">
+                                <div className="flex items-center gap-2 text-muted text-xs font-bold uppercase tracking-wider mb-2">
+                                    <Trophy size={14} className="text-green-500" />
+                                    Wins
+                                </div>
+                                <div className="text-2xl font-black text-green-500">
+                                    {wins}
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Losses */}
+                        <div className="glass rounded-2xl p-5 relative overflow-hidden group/card">
+                            <div className="absolute inset-0 bg-gradient-to-br from-red-500/5 to-transparent opacity-0 group-hover/card:opacity-100 transition-opacity"></div>
+                            <div className="relative z-10">
+                                <div className="flex items-center gap-2 text-muted text-xs font-bold uppercase tracking-wider mb-2">
+                                    <TrendingDown size={14} className="text-red-500" />
+                                    Losses
+                                </div>
+                                <div className="text-2xl font-black text-red-500">
+                                    {losses}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Secondary Stats */}
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mt-4">
+                        {/* Active Bets */}
+                        <div className="glass rounded-2xl p-5">
+                            <div className="flex items-center gap-2 text-muted text-xs font-bold uppercase tracking-wider mb-2">
+                                <TrendingUp size={14} className="text-yellow-500" />
+                                Active Bets
+                            </div>
+                            <div className="text-2xl font-black text-yellow-500">
+                                {activeBets}
+                            </div>
+                        </div>
+
+                        {/* Win Rate */}
+                        <div className="glass rounded-2xl p-5">
+                            <div className="flex items-center gap-2 text-muted text-xs font-bold uppercase tracking-wider mb-2">
+                                <Trophy size={14} />
+                                Win Rate
                             </div>
                             <div className="text-2xl font-black text-white">
-                                {isLoadingBalance ? (
-                                    <span className="text-muted animate-pulse">Loading...</span>
-                                ) : (
-                                    <>
-                                        {displayBalance} <span className="text-sm font-bold text-muted">{currencySymbol}</span>
-                                    </>
-                                )}
+                                {winRate}%
                             </div>
                         </div>
-                        <div className="glass bg-white/[0.02] rounded-3xl p-6 border border-white/5 hover:border-secondary/30 transition-all">
-                            <div className="text-[10px] text-muted font-bold uppercase tracking-widest mb-3 flex items-center gap-2">
-                                <History size={14} className="text-secondary" /> Total Bets
+
+                        {/* Total Wagered */}
+                        <div className="glass rounded-2xl p-5">
+                            <div className="flex items-center gap-2 text-muted text-xs font-bold uppercase tracking-wider mb-2">
+                                <Wallet size={14} />
+                                Total Wagered
                             </div>
-                            <div className="text-2xl font-black text-white">{totalBets}</div>
-                        </div>
-                        <div className="glass bg-white/[0.02] rounded-3xl p-6 border border-white/5 hover:border-green-500/30 transition-all">
-                            <div className="text-[10px] text-muted font-bold uppercase tracking-widest mb-3 flex items-center gap-2">
-                                <TrendingUp size={14} className="text-green-500" /> Active Bets
+                            <div className="text-2xl font-black text-white">
+                                {totalWagered.toFixed(4)} <span className="text-sm text-muted">{currencySymbol}</span>
                             </div>
-                            <div className="text-2xl font-black text-green-500">{activeBets}</div>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <TransactionHistory />
-
-            <div className="mt-12 flex justify-center">
-                <button
-                    onClick={() => disconnect()}
-                    className="px-8 py-4 rounded-2xl bg-white/[0.03] border border-red-500/20 text-red-500 hover:bg-red-500/10 hover:border-red-500/50 transition-all font-black text-[10px] uppercase tracking-[0.2em]"
-                >
-                    Log Out of Terminal
-                </button>
+            {/* Transaction History */}
+            <div className="glass rounded-4xl p-8">
+                <h2 className="text-2xl font-black text-white mb-6 flex items-center gap-2">
+                    <History size={24} className="text-primary" />
+                    Recent Predictions
+                </h2>
+                <TransactionHistory />
             </div>
 
             <SettingsModal

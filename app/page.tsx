@@ -1,10 +1,11 @@
 "use client";
 
 import React, { useState } from 'react';
-import { Sparkles, Filter } from 'lucide-react';
+import { Sparkles, Filter, Plus } from 'lucide-react';
 import { MOCK_MARKETS, Market } from '@/lib/data';
-import { MarketCard } from '@/components/MarketCard';
+import { SocialPredictionCard } from '@/components/SocialPredictionCard';
 import { BetModal } from '@/components/BetModal';
+import { CreateMarketModal } from '@/components/CreateMarketModal';
 import { useAccount } from 'wagmi';
 import InfiniteScroll from 'react-infinite-scroll-component';
 
@@ -13,6 +14,7 @@ export default function Home() {
   const [selectedMarketId, setSelectedMarketId] = useState<number | null>(null);
   const [selectedSide, setSelectedSide] = useState<'A' | 'B' | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
   // Infinite Scroll State
   const [markets, setMarkets] = useState<Market[]>(MOCK_MARKETS);
@@ -164,16 +166,25 @@ export default function Home() {
               <Sparkles className="text-primary" size={20} />
               Active Markets
             </h3>
-            <div className="flex items-center gap-2 lg:hidden">
-              <select
-                value={selectedFilter}
-                onChange={(e) => setSelectedFilter(e.target.value as any)}
-                className="bg-white/[0.03] border border-white/10 rounded-xl px-4 py-2 text-xs font-bold text-white focus:outline-none focus:border-primary transition-all"
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setIsCreateModalOpen(true)}
+                className="hidden lg:flex items-center gap-2 px-4 py-2 rounded-xl bg-primary hover:bg-primary/90 text-white font-bold text-sm transition-all"
               >
-                <option value="volume">High Volume</option>
-                <option value="ending">Ending Soon</option>
-                <option value="newest">Newest</option>
-              </select>
+                <Plus size={16} />
+                Create Market
+              </button>
+              <div className="lg:hidden">
+                <select
+                  value={selectedFilter}
+                  onChange={(e) => setSelectedFilter(e.target.value as any)}
+                  className="bg-white/[0.03] border border-white/10 rounded-xl px-4 py-2 text-xs font-bold text-white focus:outline-none focus:border-primary transition-all"
+                >
+                  <option value="volume">High Volume</option>
+                  <option value="ending">Ending Soon</option>
+                  <option value="newest">Newest</option>
+                </select>
+              </div>
             </div>
           </div>
 
@@ -196,7 +207,7 @@ export default function Home() {
           >
             <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
               {sortedMarkets.map((market, index) => (
-                <MarketCard
+                <SocialPredictionCard
                   key={`${market.id}-${index}`}
                   market={market}
                   onBet={handleBetClick}
@@ -205,7 +216,7 @@ export default function Home() {
             </div>
           </InfiniteScroll>
         </div>
-      </div>
+      </div >
 
       {/* Bet Modal */}
       {selectedMarketId && selectedSide && (
@@ -215,9 +226,19 @@ export default function Home() {
           marketId={selectedMarketId}
           side={selectedSide}
           onConfirm={handleConfirmBet}
+          marketQuestion={markets.find(m => m.id === selectedMarketId)?.question}
         />
       )}
+
+      {/* Create Market Modal */}
+      <CreateMarketModal
+        isOpen={isCreateModalOpen}
+        onClose={() => setIsCreateModalOpen(false)}
+        onSuccess={() => {
+          // Refresh markets after creation
+          console.log('Market created successfully!');
+        }}
+      />
     </div>
   );
 }
-

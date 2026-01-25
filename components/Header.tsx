@@ -1,13 +1,43 @@
 "use client";
 
-import { Sparkles, Trophy, User } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { Sparkles, Trophy, User, Wallet } from 'lucide-react';
 import Link from 'next/link';
 import { ConnectButton } from './ConnectButton';
 import { ChainSelector } from './ChainSelector';
 import { usePathname } from 'next/navigation';
+import { useAccount } from 'wagmi';
+import { useBettingStore } from '@/lib/stores/transactionStore';
+import { ethers } from 'ethers';
 
 export function Header() {
     const pathname = usePathname();
+    const { address, isConnected } = useAccount();
+    const { selectedChain, optimisticBalance, setOptimisticBalance } = useBettingStore();
+    const [isMounted, setIsMounted] = useState(false);
+
+    // Prevent hydration mismatch
+    useEffect(() => {
+        setIsMounted(true);
+    }, []);
+
+    // Fetch wallet balance when connected
+    useEffect(() => {
+        if (address && isConnected && typeof window !== 'undefined' && window.ethereum) {
+            const fetchBalance = async () => {
+                try {
+                    const provider = new ethers.BrowserProvider(window.ethereum);
+                    const balance = await provider.getBalance(address);
+                    const balanceFormatted = ethers.formatEther(balance);
+                    const balanceRounded = parseFloat(balanceFormatted).toFixed(4);
+                    setOptimisticBalance(balanceRounded);
+                } catch (error) {
+                    console.error('Error fetching balance:', error);
+                }
+            };
+            fetchBalance();
+        }
+    }, [address, isConnected, selectedChain, setOptimisticBalance]);
 
     const navItems = [
         { name: 'Markets', href: '/', icon: Sparkles },
@@ -41,8 +71,8 @@ export function Header() {
                                     key={item.name}
                                     href={item.href}
                                     className={`px-5 py-2 rounded-full font-medium text-sm transition-all flex items-center gap-2 ${isActive
-                                            ? 'bg-white/10 text-white shadow-inner shadow-white/5'
-                                            : 'text-muted hover:text-white hover:bg-white/5'
+                                        ? 'bg-white/10 text-white shadow-inner shadow-white/5'
+                                        : 'text-muted hover:text-white hover:bg-white/5'
                                         }`}
                                 >
                                     <item.icon size={16} className={isActive ? 'text-primary' : ''} />
@@ -54,6 +84,15 @@ export function Header() {
                 </div>
 
                 <div className="flex items-center gap-3">
+                    {/* Balance Display - Only render on client */}
+                    {isMounted && isConnected && optimisticBalance && (
+                        <div className="hidden sm:flex items-center gap-2 px-3 py-2 bg-white/[0.03] rounded-xl border border-white/5">
+                            <Wallet size={14} className="text-primary" />
+                            <span className="text-sm font-bold text-white">
+                                {optimisticBalance}
+                            </span>
+                        </div>
+                    )}
                     <ChainSelector />
                     <ConnectButton />
                 </div>
